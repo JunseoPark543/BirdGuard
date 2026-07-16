@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "generatedAt": null,
+  "categories": {
+    "commercial": {
+      "imageCount": 0,
+      "commonVisualFeatures": [],
+      "individualExamples": []
+    },
+    "transparent-barrier": {
+      "imageCount": 0,
+      "commonVisualFeatures": [],
+      "individualExamples": []
+    },
+    "glass-facade": {
+      "imageCount": 0,
+      "commonVisualFeatures": [],
+      "individualExamples": []
+    },
+    "university": {
+      "imageCount": 0,
+      "commonVisualFeatures": [],
+      "individualExamples": []
+    },
+    "near-nature": {
+      "imageCount": 0,
+      "commonVisualFeatures": [],
+      "individualExamples": []
+    },
+    "residential": {
+      "imageCount": 0,
+      "commonVisualFeatures": [],
+      "individualExamples": []
+    },
+    "special": {
+      "imageCount": 0,
+      "commonVisualFeatures": [],
+      "individualExamples": []
+    },
+    "other": {
+      "imageCount": 0,
+      "commonVisualFeatures": [],
+      "individualExamples": []
+    }
+  }
+}
