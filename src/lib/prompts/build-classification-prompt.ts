@@ -1,7 +1,23 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { buildingCategories } from "@/config/categories";
 import referenceManifest from "@/data/reference-manifest.json";
 
 type ReferenceManifest = typeof referenceManifest;
+
+const masterDocumentPath = join(
+  process.cwd(),
+  "docs",
+  "building-classification-master.md",
+);
+
+let cachedMasterDocument: string | undefined;
+
+export function getBuildingClassificationMaster() {
+  cachedMasterDocument ??= readFileSync(masterDocumentPath, "utf8").trim();
+  return cachedMasterDocument;
+}
 
 function formatCategories() {
   return buildingCategories
@@ -36,45 +52,31 @@ function formatReferenceFeatures(manifest: ReferenceManifest) {
 export function buildClassificationPrompt(manifest: ReferenceManifest = referenceManifest) {
   return `
 너는 조류 충돌 방지 디자인을 돕는 건물 사진 분석 AI다.
-업로드된 사진 한 장만 보고 건물 또는 투명 방벽 환경을 분석한다.
+업로드된 사진 한 장만 보고 건물 또는 투명 방음벽 환경을 분석한다.
 
-[중요 규칙]
+${getBuildingClassificationMaster()}
+
+[중요 응답 원칙]
 1. 사진에서 실제로 보이는 근거만 사용한다.
 2. 보이지 않는 정보를 사실처럼 만들지 않는다.
-3. 건물 용도와 층수를 확신하기 어려우면 반드시 추정이라고 쓴다.
-4. 창문, 투명 유리 구조, 유리 반사, 하늘 반사, 주변 식생을 우선 확인한다.
-5. 조류 충돌 위험도는 사진 기반 AI 추정이라고 설명한다.
-6. 대표 카테고리는 반드시 하나만 선택한다.
-7. 판단이 어렵거나 명확하지 않으면 other를 선택한다.
-8. 보조 카테고리는 최대 3개이며 대표 카테고리와 중복하지 않는다.
-9. 신뢰도는 0부터 100 사이 정수이며 과도하게 높게 쓰지 않는다.
-10. 모든 설명은 쉬운 한국어로 작성한다.
-11. 마크다운 코드블록 없이 JSON 객체만 반환한다.
-12. 답변을 불필요하게 길게 작성하지 않는다.
+3. 건물 용도, 실제 면적, 반사율, 거리 또는 층수를 확정하기 어려우면 추정이라고 밝힌다.
+4. 대표 카테고리는 반드시 하나만 선택한다. 불명확하면 other를 선택한다.
+5. 보조 카테고리는 최대 3개이며 대표 카테고리와 중복하지 않는다.
+6. 신뢰도는 0부터 100 사이 정수로 과도하게 높게 잡지 않는다.
+7. 모든 설명은 짧고 명확한 한국어로 작성한다.
+8. 마크다운 코드 블록 없이 JSON 객체만 반환한다.
 
 [카테고리 설정]
 ${formatCategories()}
 
-[참고 이미지 텍스트 특징]
+[참고 이미지의 텍스트 특징]
 ${formatReferenceFeatures(manifest)}
 
-[분석 항목]
-- 건물 또는 투명 방벽 사진인지
-- 사진 품질과 그 이유
-- 건물 용도 또는 추정 용도
-- 창문 크기, 유리 반사도, 주변 식생, 하늘 반사
-- 예상 층수. 모르면 null과 설명을 사용
-- 조류 충돌 위험도와 주요 위험 요인
-- 대표 카테고리와 보조 카테고리
-- 환경 태그
-- 사진에서 확인한 분류 근거
-- 스티커 디자인에 반영할 요소
-
 [응답 JSON 규칙]
-schemaVersion은 1이다.
-primaryCategory는 commercial, transparent-barrier, glass-facade, university, near-nature, residential, special, other 중 하나다.
-secondaryCategories는 최대 3개다.
-classificationConfidence와 secondaryCategories.confidence는 0부터 100 사이 정수다.
-문자열 배열은 핵심 항목만 짧게 작성한다.
+- schemaVersion은 1이다.
+- primaryCategory는 commercial, transparent-barrier, glass-facade, university, near-nature, residential, special, other 중 하나다.
+- secondaryCategories는 최대 3개다.
+- classificationConfidence와 secondaryCategories.confidence는 0부터 100 사이 정수다.
+- 문자열과 배열은 핵심 항목만 짧게 작성한다.
 `.trim();
 }
