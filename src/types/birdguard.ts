@@ -15,7 +15,8 @@ export type BirdGuardStep =
   | "analyzing"
   | "analysis"
   | "generating"
-  | "result";
+  | "result"
+  | "registration";
 
 export type ImageQuality = "good" | "usable" | "poor";
 export type WindowSize = "small" | "medium" | "large" | "mixed" | "unknown";

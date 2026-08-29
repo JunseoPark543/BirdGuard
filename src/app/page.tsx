@@ -7,6 +7,7 @@ import { AnalyzingStep } from "@/components/birdguard/analyzing-step";
 import { ErrorMessage } from "@/components/birdguard/error-message";
 import { GeneratingStep } from "@/components/birdguard/generating-step";
 import { ResultStep } from "@/components/birdguard/result-step";
+import { BuddyzoneRegistration } from "@/components/birdguard/buddyzone-registration";
 import { UploadStep } from "@/components/birdguard/upload-step";
 import { buildDesignExplanation, type DesignExplanation } from "@/lib/build-design-explanation";
 import { downloadBlobUrl } from "@/lib/download-image";
@@ -39,15 +40,16 @@ export default function Home() {
   return <main className="site-shell">
     <header className="topbar"><button className="brand" type="button" onClick={restart}><span className="brand-mark"><Bird size={20} /></span><span>GO-<b>BIRD</b></span></button><button className="icon-button" type="button" aria-label="메뉴"><Menu /></button></header>
     <div className={step === "upload" ? "content" : "content content-compact"}>
-      {step === "upload" && <section className="hero"><div className="hero-copy"><span className="eyebrow">BIRD-SAFE ARCHITECTURE</span><h1>조류 충돌 예방,<br /><em>버드가드가 지켜드려요!</em></h1><p>건물 사진 한 장으로 위험 요인을 분석하고, 공간에 꼭 맞는 충돌 방지 디자인을 제안합니다.</p><div className="hero-chips"><span>AI 위험도 진단</span><span>5×10cm 기준 설계</span><span>맞춤 디자인</span></div></div><div className="hero-visual" aria-hidden="true"><Bird size={92} strokeWidth={1.3} /><span>SAFE<br />FLIGHT</span></div></section>}
+      {step === "upload" && <section className="hero"><div className="hero-copy"><span className="eyebrow">BIRD-SAFE ARCHITECTURE</span><h1>조류 충돌 예방,<br /><em>버드가드가 지켜드려요!</em></h1><p>건물 사진 한 장으로 위험 요인을 분석하고, 공간에 꼭 맞는 충돌 방지 디자인을 제안합니다.</p><div className="hero-chips"><span>AI 위험도 진단</span><span>5×10cm 기준 설계</span><span>맞춤 디자인</span></div></div><div className="hero-visual"><span className="mascot-halo" aria-hidden="true" /><img src="/mascot/birdguard-front.png" alt="5×10 안전모를 쓴 버드가드 마스코트" /></div></section>}
       <ErrorMessage message={error} />
       {step === "upload" && <UploadStep previewUrl={preview} fileName={file?.name ?? null} isAnalyzing={analyzing} onFileSelected={selectFile} onAnalyze={analyze} />}
       {step === "analyzing" && preview && <AnalyzingStep previewUrl={preview} />}
       {step === "analysis" && preview && analysis && <AnalysisStep previewUrl={preview} analysis={analysis} selectedCategory={category} customDesignRequest={request} isGenerating={generating} onSelectedCategoryChange={setCategory} onCustomDesignRequestChange={setRequest} onGenerate={generate} />}
       {step === "generating" && <GeneratingStep selectedCategory={category} customDesignRequest={request} />}
-      {step === "result" && result && analysis && initialCategory && explanation && <ResultStep resultImageUrl={result} analysis={analysis} initialCategory={initialCategory} selectedCategory={category} designExplanation={explanation} onDownload={() => downloadBlobUrl(result, category)} onRestart={restart} />}
-      {step === "upload" && <section className="why-section"><p className="section-kicker">WHY BIRDGUARD</p><h2>새에게는 안전하게,<br />건물에는 자연스럽게.</h2><div className="benefit-grid"><article><ScanLine /><b>과학적인 간격</b><p>가로 10cm, 세로 5cm 이하 간격으로 새가 통로로 오인하지 않도록 설계합니다.</p></article><article><Bird /><b>환경 맞춤 분석</b><p>유리 반사, 창 크기, 주변 식생을 종합해 실제 위험 요인을 살핍니다.</p></article><article><MapPinned /><b>설치까지 연결</b><p>분석과 디자인에 그치지 않고 설치 인증과 버디존 등록으로 이어집니다.</p></article></div></section>}
+      {step === "result" && result && analysis && initialCategory && explanation && <ResultStep resultImageUrl={result} analysis={analysis} initialCategory={initialCategory} selectedCategory={category} designExplanation={explanation} onDownload={() => downloadBlobUrl(result, category)} onRestart={restart} onRegister={() => setStep("registration")} />}
+      {step === "registration" && <BuddyzoneRegistration onBack={() => setStep("result")} />}
+      {step === "upload" && <section className="why-section"><p className="section-kicker">WHY BIRDGUARD</p><h2>왜 버드가드인가요?</h2><div className="benefit-grid"><article><ScanLine /><b>5×10cm 법칙 준수</b><p>과학적으로 검증된 안전 간격</p></article><article><Bird /><b>건물 외벽과 완벽한 조화</b><p>재질/질감 맞춤 디자인 추천</p></article><article><MapPinned /><b>실제 설치 &amp; 인증까지</b><p>버디존 등록하고 인증 받으세요!</p></article></div></section>}
     </div>
-    <nav className="bottom-nav"><button className={step === "upload" ? "active" : ""} onClick={restart}><HomeIcon /><span>홈</span></button><button className={step !== "upload" ? "active" : ""}><ScanLine /><span>분석하기</span></button><button><MapPinned /><span>버디존</span></button><button><UserRound /><span>마이페이지</span></button></nav>
+    <nav className="bottom-nav"><button className={step === "upload" ? "active" : ""} onClick={restart}><HomeIcon /><span>홈</span></button><button className={step !== "upload" && step !== "registration" ? "active" : ""}><ScanLine /><span>분석하기</span></button><button className={step === "registration" ? "active" : ""}><MapPinned /><span>버디존</span></button><button><UserRound /><span>마이페이지</span></button></nav>
   </main>;
 }
