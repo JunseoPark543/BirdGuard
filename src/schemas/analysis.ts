@@ -175,7 +175,6 @@ export const geminiAnalysisJsonSchema = {
     designConsiderations: { type: "array", items: { type: "string" } },
     glassRegions: {
       type: "array",
-      maxItems: "30",
       items: {
         type: "object",
         required: ["label", "confidence", "polygon"],
@@ -184,12 +183,8 @@ export const geminiAnalysisJsonSchema = {
           confidence: { type: "number" },
           polygon: {
             type: "array",
-            minItems: "3",
-            maxItems: "40",
             items: {
               type: "array",
-              minItems: "2",
-              maxItems: "2",
               items: { type: "number" },
             },
           },
