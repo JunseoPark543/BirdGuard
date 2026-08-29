@@ -34,6 +34,12 @@ export type SecondaryCategory = {
   confidence: number;
 };
 
+export type GlassRegion = {
+  label: string;
+  confidence: number;
+  polygon: Array<[number, number]>;
+};
+
 export type BuildingAnalysis = {
   schemaVersion: 1;
   isRelevantPhoto: boolean;
@@ -58,5 +64,6 @@ export type BuildingAnalysis = {
   environmentTags: string[];
   analyzedEvidence: string[];
   designConsiderations: string[];
+  glassRegions: GlassRegion[];
   caution: string;
 };

@@ -65,6 +65,9 @@ ${getBuildingClassificationMaster()}
 6. 신뢰도는 0부터 100 사이 정수로 과도하게 높게 잡지 않는다.
 7. 모든 설명은 짧고 명확한 한국어로 작성한다.
 8. 마크다운 코드 블록 없이 JSON 객체만 반환한다.
+9. 사진에서 실제 유리창 또는 투명 패널로 확인되는 영역만 glassRegions에 다각형으로 반환한다.
+10. glassRegions의 polygon은 사진 전체를 기준으로 정규화한 [x, y] 좌표이며 각 값은 0부터 1000 사이다. 창틀, 벽, 지붕, 하늘, 나무는 포함하지 않는다.
+11. 서로 떨어진 유리 면은 별도 영역으로 나누고, 유리 영역을 신뢰성 있게 찾지 못하면 glassRegions를 빈 배열로 반환한다. 사진 전체나 건물 전체를 유리 영역으로 지정하지 않는다.
 
 [카테고리 설정]
 ${formatCategories()}
@@ -78,5 +81,6 @@ ${formatReferenceFeatures(manifest)}
 - secondaryCategories는 최대 3개다.
 - classificationConfidence와 secondaryCategories.confidence는 0부터 100 사이 정수다.
 - 문자열과 배열은 핵심 항목만 짧게 작성한다.
+- glassRegions는 최대 30개이며, 각 항목은 label, confidence, polygon을 포함한다. polygon은 최소 3개의 [x, y] 점으로 구성한다.
 `.trim();
 }

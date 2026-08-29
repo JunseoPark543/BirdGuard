@@ -40,6 +40,16 @@ export const mockBuildingAnalysis: BuildingAnalysis = {
     "넓은 유리면을 분절하는 패턴",
     "캠퍼스 분위기에 맞는 차분한 색상",
   ],
+  glassRegions: [
+    {
+      label: "건물 전면의 넓은 유리창 영역",
+      confidence: 88,
+      polygon: [
+        [190, 245], [500, 105], [820, 285], [810, 790],
+        [515, 850], [205, 745],
+      ],
+    },
+  ],
   caution:
     "이 결과는 데모 모드의 샘플 분석이며 실제 AI 분석이나 현장 조사 결과가 아닙니다.",
 };

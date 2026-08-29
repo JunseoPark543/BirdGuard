@@ -4,6 +4,7 @@ import { ArrowRight, Check, CircleDot, Grid3X3, Minus, RotateCcw, Sparkles } fro
 import { useState } from "react";
 import { AnalysisSummary } from "@/components/birdguard/analysis-summary";
 import { CategorySelect } from "@/components/birdguard/category-select";
+import { GlassPatternPreview } from "@/components/birdguard/glass-pattern-preview";
 import { appConfig } from "@/config/app";
 import type { BuildingAnalysis, BuildingCategoryId } from "@/types/birdguard";
 
@@ -38,7 +39,7 @@ export function AnalysisStep({ previewUrl, analysis, selectedCategory, customDes
       </div>
 
       {tab === "design" && <div className="tab-panel">
-        <div className="before-after"><figure><img src={previewUrl} alt="적용 전 건물"/><figcaption>Before<br/><small>현재 유리창</small></figcaption></figure><figure className={`after-preview pattern-${pattern}`}><img src={previewUrl} alt={`${patterns.find(v => v.id === pattern)?.label} 적용 예상 모습`}/><i aria-hidden="true"/><figcaption>After<br/><small>충돌 방지 적용</small></figcaption></figure><span>→</span></div>
+        <div className="before-after"><figure><img src={previewUrl} alt="적용 전 건물"/><figcaption>Before<br/><small>현재 유리창</small></figcaption></figure><figure className="after-preview"><GlassPatternPreview imageUrl={previewUrl} regions={analysis.glassRegions} pattern={pattern} alt={`${patterns.find(v => v.id === pattern)?.label}을 유리 영역에 적용한 예상 모습`} /><figcaption>After<br/><small>인식된 유리 영역만 적용</small></figcaption></figure><span>→</span></div>
         <div className="standard-badge"><Check /> 추천 디자인 <b>5×10cm 규격 준수</b></div>
         <div className="pattern-options">{patterns.map(item => { const Icon = item.icon; return <button key={item.id} className={pattern === item.id ? "selected" : ""} onClick={() => choosePattern(item.id, item.label)}><span className={`pattern-swatch swatch-${item.id}`}><Icon /></span><b>{item.label}</b><small>{item.note}</small>{pattern === item.id && <Check className="option-check"/>}</button>})}</div>
         <button className="primary-button next-tab" onClick={() => setTab("material")}>소재 추천 보기 <ArrowRight /></button>

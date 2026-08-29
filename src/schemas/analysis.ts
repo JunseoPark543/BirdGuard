@@ -56,6 +56,18 @@ export const buildingAnalysisSchema = z
     environmentTags: z.array(z.string().trim().min(1).max(40)).max(8),
     analyzedEvidence: shortTextArray,
     designConsiderations: shortTextArray,
+    glassRegions: z
+      .array(
+        z.object({
+          label: z.string().trim().min(1).max(80),
+          confidence: confidenceSchema,
+          polygon: z
+            .array(z.tuple([z.number().min(0).max(1000), z.number().min(0).max(1000)]))
+            .min(3)
+            .max(40),
+        }),
+      )
+      .max(30),
     caution: z.string().trim().min(1).max(320),
   })
   .superRefine((value, context) => {
@@ -101,6 +113,7 @@ export const geminiAnalysisJsonSchema = {
     "environmentTags",
     "analyzedEvidence",
     "designConsiderations",
+    "glassRegions",
     "caution",
   ],
   properties: {
@@ -160,6 +173,29 @@ export const geminiAnalysisJsonSchema = {
     environmentTags: { type: "array", items: { type: "string" } },
     analyzedEvidence: { type: "array", items: { type: "string" } },
     designConsiderations: { type: "array", items: { type: "string" } },
+    glassRegions: {
+      type: "array",
+      maxItems: "30",
+      items: {
+        type: "object",
+        required: ["label", "confidence", "polygon"],
+        properties: {
+          label: { type: "string" },
+          confidence: { type: "number" },
+          polygon: {
+            type: "array",
+            minItems: "3",
+            maxItems: "40",
+            items: {
+              type: "array",
+              minItems: "2",
+              maxItems: "2",
+              items: { type: "number" },
+            },
+          },
+        },
+      },
+    },
     caution: { type: "string" },
   },
 } as const;

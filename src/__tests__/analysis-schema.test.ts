@@ -57,4 +57,13 @@ describe("buildingAnalysisSchema", () => {
       }),
     ).toThrow();
   });
+
+  it("rejects glass mask coordinates outside the normalized image", () => {
+    expect(() =>
+      buildingAnalysisSchema.parse({
+        ...mockBuildingAnalysis,
+        glassRegions: [{ label: "유리창", confidence: 80, polygon: [[0, 0], [1001, 0], [0, 100]] }],
+      }),
+    ).toThrow();
+  });
 });
