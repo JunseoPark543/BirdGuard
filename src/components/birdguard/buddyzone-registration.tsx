@@ -23,20 +23,15 @@ export function BuddyzoneRegistration({ onBack }: { onBack: () => void }) {
   const [selectedAddress, setSelectedAddress] = useState<SelectedAddress | null>(null);
   const [category, setCategory] = useState("");
   const [submittedPlace, setSubmittedPlace] = useState<BuddyzonePlace | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
   const urls = useRef<string[]>([]);
   useEffect(() => () => urls.current.forEach(url => URL.revokeObjectURL(url)), []);
   function photo(file: File, setter: (url: string) => void) { const url = URL.createObjectURL(file); urls.current.push(url); setter(url); }
   const ready = Boolean(before && after && store.trim() && selectedAddress && category);
 
-  async function submit() {
+  function submit() {
     if (!ready || !selectedAddress) return;
-    setSaving(true); setSaveError("");
-    const place: BuddyzonePlace = { id: crypto.randomUUID(), storeName: store.trim(), address: selectedAddress.address, category, latitude: selectedAddress.latitude, longitude: selectedAddress.longitude, createdAt: new Date().toISOString() };
-    try { setSubmittedPlace(await saveBuddyzone(place)); }
-    catch (error) { setSaveError(error instanceof Error ? error.message : "버디존을 저장하지 못했습니다."); }
-    finally { setSaving(false); }
+    const place: BuddyzonePlace = { id: `${selectedAddress.id}-${Date.now()}`, storeName: store.trim(), address: selectedAddress.address, category, latitude: selectedAddress.latitude, longitude: selectedAddress.longitude, createdAt: new Date().toISOString() };
+    saveBuddyzone(place); setSubmittedPlace(place);
   }
 
   if (submittedPlace) return <KakaoBuddyzoneMap selectedPlace={submittedPlace} onBack={() => setSubmittedPlace(null)} />;
@@ -53,8 +48,7 @@ export function BuddyzoneRegistration({ onBack }: { onBack: () => void }) {
 
     <section className="registration-section"><div className="registration-section-title"><span>2</span><div><h2>매장 정보 입력</h2><p>검색된 실제 주소를 선택하면 해당 좌표가 지도에 등록됩니다.</p></div></div><div className="registration-form"><label><span>매장명</span><input value={store} onChange={e => setStore(e.target.value)} placeholder="매장명을 입력해 주세요" /></label><label><span>주소 검색</span><KakaoAddressSearch value={selectedAddress} onSelect={address => { setSelectedAddress(address); if (!store.trim()) setStore(address.placeName); }} /></label><label><span>카테고리</span><div><select value={category} onChange={e => setCategory(e.target.value)}><option value="" disabled>카테고리 선택</option><option>카페</option><option>상점</option><option>학교</option><option>공공기관</option><option>기타</option></select><ChevronDown /></div></label></div></section>
 
-    {saveError && <p className="registration-save-error">{saveError}</p>}
-    <button type="button" className="primary-button registration-submit" disabled={!ready || saving} onClick={() => void submit()}>{saving ? "Supabase에 저장 중…" : "등록하고 지도에서 보기"}</button>
+    <button type="button" className="primary-button registration-submit" disabled={!ready} onClick={submit}>등록하고 지도에서 보기</button>
     {!ready && <p className="registration-help">사진 2장과 매장 정보를 모두 입력하면 다음 단계로 이동할 수 있어요.</p>}
   </section>;
 }
