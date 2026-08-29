@@ -17,6 +17,7 @@ export type KakaoMaps = {
   Map: new (container: HTMLElement, options: { center: KakaoLatLng; level: number }) => KakaoMap;
   Marker: new (options: { map: KakaoMap; position: KakaoLatLng; title?: string }) => KakaoMarker;
   InfoWindow: new (options: { content: string }) => { open: (map: KakaoMap, marker: KakaoMarker) => void };
+  event: { addListener: (target: object, type: string, handler: () => void) => void };
   services: {
     Places: new () => { keywordSearch: (keyword: string, callback: (result: KakaoPlaceSearchResult[], status: string) => void) => void };
     Status: { OK: string; ZERO_RESULT: string; ERROR: string };
