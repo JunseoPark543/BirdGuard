@@ -16,7 +16,8 @@ export type BirdGuardStep =
   | "analysis"
   | "generating"
   | "result"
-  | "registration";
+  | "registration"
+  | "buddyzone-map";
 
 export type ImageQuality = "good" | "usable" | "poor";
 export type WindowSize = "small" | "medium" | "large" | "mixed" | "unknown";

@@ -8,6 +8,7 @@ import { ErrorMessage } from "@/components/birdguard/error-message";
 import { GeneratingStep } from "@/components/birdguard/generating-step";
 import { ResultStep } from "@/components/birdguard/result-step";
 import { BuddyzoneRegistration } from "@/components/birdguard/buddyzone-registration";
+import { KakaoBuddyzoneMap } from "@/components/birdguard/kakao-buddyzone-map";
 import { UploadStep } from "@/components/birdguard/upload-step";
 import { buildDesignExplanation, type DesignExplanation } from "@/lib/build-design-explanation";
 import { downloadBlobUrl } from "@/lib/download-image";
@@ -48,8 +49,9 @@ export default function Home() {
       {step === "generating" && <GeneratingStep selectedCategory={category} customDesignRequest={request} />}
       {step === "result" && result && analysis && initialCategory && explanation && <ResultStep resultImageUrl={result} analysis={analysis} initialCategory={initialCategory} selectedCategory={category} designExplanation={explanation} onDownload={() => downloadBlobUrl(result, category)} onRestart={restart} onRegister={() => setStep("registration")} />}
       {step === "registration" && <BuddyzoneRegistration onBack={() => setStep("result")} />}
+      {step === "buddyzone-map" && <KakaoBuddyzoneMap onBack={() => setStep("upload")} />}
       {step === "upload" && <section className="why-section"><p className="section-kicker">WHY BIRDGUARD</p><h2>왜 버드가드인가요?</h2><div className="benefit-grid"><article><ScanLine /><b>5×10cm 법칙 준수</b><p>과학적으로 검증된 안전 간격</p></article><article><Bird /><b>건물 외벽과 완벽한 조화</b><p>재질/질감 맞춤 디자인 추천</p></article><article><MapPinned /><b>실제 설치 &amp; 인증까지</b><p>버디존 등록하고 인증 받으세요!</p></article></div></section>}
     </div>
-    <nav className="bottom-nav"><button className={step === "upload" ? "active" : ""} onClick={restart}><HomeIcon /><span>홈</span></button><button className={step !== "upload" && step !== "registration" ? "active" : ""}><ScanLine /><span>분석하기</span></button><button className={step === "registration" ? "active" : ""}><MapPinned /><span>버디존</span></button><button><UserRound /><span>마이페이지</span></button></nav>
+    <nav className="bottom-nav"><button className={step === "upload" ? "active" : ""} onClick={restart}><HomeIcon /><span>홈</span></button><button className={!["upload", "registration", "buddyzone-map"].includes(step) ? "active" : ""}><ScanLine /><span>분석하기</span></button><button className={["registration", "buddyzone-map"].includes(step) ? "active" : ""} onClick={() => setStep("buddyzone-map")}><MapPinned /><span>버디존</span></button><button><UserRound /><span>마이페이지</span></button></nav>
   </main>;
 }

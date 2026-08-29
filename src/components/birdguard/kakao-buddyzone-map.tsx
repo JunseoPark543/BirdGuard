@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { loadBuddyzones, type BuddyzonePlace } from "@/lib/buddyzone-storage";
 import { loadKakaoMaps, type KakaoMap, type KakaoMaps, type KakaoMarker } from "@/lib/kakao-maps";
 
-type Props = { selectedPlace: BuddyzonePlace; onBack: () => void };
+type Props = { selectedPlace?: BuddyzonePlace; onBack: () => void };
 const categories = ["전체", "카페", "상점", "학교", "공공기관", "기타"];
 const safe = (value: string) => value.replace(/[<>&"']/g, "");
 
@@ -19,14 +19,15 @@ export function KakaoBuddyzoneMap({ selectedPlace, onBack }: Props) {
 
   useEffect(() => {
     if (!maps || !container.current) return;
-    if (!mapRef.current) mapRef.current = new maps.Map(container.current, { center: new maps.LatLng(selectedPlace.latitude, selectedPlace.longitude), level: 4 });
+    const initialPlace = selectedPlace ?? visiblePlaces[0];
+    if (!mapRef.current) mapRef.current = new maps.Map(container.current, { center: new maps.LatLng(initialPlace?.latitude ?? 37.5665, initialPlace?.longitude ?? 126.978), level: initialPlace ? 4 : 6 });
     markersRef.current.forEach(marker => marker.setMap(null)); markersRef.current = [];
     visiblePlaces.forEach(place => {
       const position = new maps.LatLng(place.latitude, place.longitude); const marker = new maps.Marker({ map: mapRef.current!, position, title: place.storeName });
       const info = new maps.InfoWindow({ content: `<div style="padding:8px 12px;font-size:12px;white-space:nowrap"><b>${safe(place.storeName)}</b><br/>${safe(place.category)} · 인증 버디존</div>` });
-      if (place.id === selectedPlace.id) info.open(mapRef.current!, marker); markersRef.current.push(marker);
+      if (place.id === selectedPlace?.id) info.open(mapRef.current!, marker); markersRef.current.push(marker);
     });
-    const focus = visiblePlaces.find(place => place.id === selectedPlace.id) ?? visiblePlaces[0];
+    const focus = visiblePlaces.find(place => place.id === selectedPlace?.id) ?? visiblePlaces[0];
     if (focus) mapRef.current.setCenter(new maps.LatLng(focus.latitude, focus.longitude));
   }, [maps, selectedPlace, visiblePlaces]);
 
@@ -40,7 +41,7 @@ export function KakaoBuddyzoneMap({ selectedPlace, onBack }: Props) {
       {status === "error" && <div className="map-state map-config"><MapPin /><b>지도를 불러오지 못했습니다</b><p>JavaScript 키와 카카오 개발자 콘솔의 등록 도메인을 확인해 주세요.</p></div>}
       {status === "ready" && visiblePlaces.length === 0 && <div className="map-empty-result">조건에 맞는 등록 버디존이 없습니다.</div>}
     </div>
-    <article className="buddy-place-card"><div className="buddy-place-icon"><MapPin /></div><div><div className="place-title"><h2>{selectedPlace.storeName}</h2><span><Check /> 인증 매장</span></div><p>{selectedPlace.address}</p><small>{selectedPlace.category} · 설치일: {new Date(selectedPlace.createdAt).toLocaleDateString("ko-KR")}</small><div className="place-rating"><Star /> 브라우저에 저장된 버디존 {places.length}개</div></div></article>
+    {selectedPlace ? <article className="buddy-place-card"><div className="buddy-place-icon"><MapPin /></div><div><div className="place-title"><h2>{selectedPlace.storeName}</h2><span><Check /> 인증 매장</span></div><p>{selectedPlace.address}</p><small>{selectedPlace.category} · 설치일: {new Date(selectedPlace.createdAt).toLocaleDateString("ko-KR")}</small><div className="place-rating"><Star /> 브라우저에 저장된 버디존 {places.length}개</div></div></article> : <div className="buddy-map-summary"><MapPin /><div><b>등록된 버디존 {places.length}개</b><p>{places.length ? "지도 마커를 선택해 버디존 위치를 확인하세요." : "아직 등록된 버디존이 없습니다. 설치 인증 후 첫 버디존을 등록해 보세요."}</p></div></div>}
     <aside className="buddyzone-info"><h2>버디존이란?</h2><p>버드가드 스티커를 설치하고 인증하면 지도에 표시되어 더 많은 사람에게 조류 친화적인 공간임을 알릴 수 있어요!</p><div><span><MapPin /><b>지도 노출</b></span><span><Check /><b>인증 현판</b></span><span><Star /><b>신뢰도 향상</b></span></div></aside>
   </section>;
 }
