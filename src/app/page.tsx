@@ -39,7 +39,7 @@ export default function Home() {
   function restart() { revoke(previewRef); revoke(resultRef); setStep("upload"); setFile(null); setPreview(null); setAnalysis(null); setInitialCategory(null); setCategory("other"); setRequest(""); setResult(null); setExplanation(null); setError(null); generationDone.current = false; }
 
   return <main className="site-shell">
-    <header className="topbar"><button className="brand" type="button" onClick={restart}><span className="brand-mark"><Bird size={20} /></span><span>GO-<b>BIRD</b></span></button><button className="icon-button" type="button" aria-label="메뉴"><Menu /></button></header>
+    <header className="topbar"><button className="brand" type="button" onClick={restart}><span className="brand-mark"><Bird size={20} /></span><span><b>BirdGuard</b></span></button><button className="icon-button" type="button" aria-label="메뉴"><Menu /></button></header>
     <div className={step === "upload" ? "content" : "content content-compact"}>
       {step === "upload" && <section className="hero"><div className="hero-copy"><span className="eyebrow">BIRD-SAFE ARCHITECTURE</span><h1>조류 충돌 예방,<br /><em>버드가드가 지켜드려요!</em></h1><p>건물 사진 한 장으로 위험 요인을 분석하고, 공간에 꼭 맞는 충돌 방지 디자인을 제안합니다.</p><div className="hero-chips"><span>AI 위험도 진단</span><span>5×10cm 기준 설계</span><span>맞춤 디자인</span></div></div><div className="hero-visual"><span className="mascot-halo" aria-hidden="true" /><img src="/mascot/birdguard-front.png" alt="5×10 안전모를 쓴 버드가드 마스코트" /></div></section>}
       <ErrorMessage message={error} />
