@@ -48,7 +48,7 @@ export function AnalysisStep({ previewUrl, analysis, selectedCategory, preferenc
           <span className="sticker-artwork"><img src={stickerDataUrl(item.asset)} alt="" /><img src={stickerDataUrl(item.companion)} alt="" /></span>
           <b>{item.title}</b><small>{item.layoutLabel}</small>{selected.id === item.id && <Check className="option-check" />}
         </button>)}</div>
-        <div className="before-after"><figure><img src={previewUrl} alt="적용 전 건물" /><figcaption>Before<br/><small>현재 유리창</small></figcaption></figure><figure className="after-preview"><GlassPatternPreview imageUrl={previewUrl} regions={analysis.glassRegions} recommendation={selected} alt={`${selected.title}을 유리 영역에 반복한 미리보기`} /><figcaption>After<br/><small>{selected.label} 적용 미리보기</small></figcaption></figure><span>→</span></div>
+        <GlassPatternPreview key={previewUrl} imageUrl={previewUrl} regions={analysis.glassRegions} recommendation={selected} alt={`${selected.title}을 평면으로 펼친 창문에 적용한 미리보기`} />
         <p className="recommendation-note">{designPreviewNotice}</p>
         <div className="sticker-reasons" aria-live="polite"><h3>{selected.label} 추천 이유</h3><ul>{selected.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul></div>
         <button type="button" className="primary-button next-tab" onClick={() => setTab("material")}>마감 제안 보기 <ArrowRight /></button>
