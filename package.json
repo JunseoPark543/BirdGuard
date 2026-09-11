@@ -10,7 +10,10 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "references:build": "tsx scripts/build-reference-manifest.ts"
+    "references:build": "tsx scripts/build-reference-manifest.ts",
+    "stickers:build": "tsx scripts/build-sticker-catalog.ts",
+    "predev": "npm run stickers:build",
+    "prebuild": "npm run stickers:build"
   },
   "dependencies": {
     "@google/genai": "^2.11.0",

@@ -1,11 +1,7 @@
-import { readFile } from "fs/promises";
-import { join } from "path";
-
 import { NextResponse } from "next/server";
-
-import { geminiConfig } from "@/config/gemini";
 import { AppError, toErrorResponse } from "@/lib/errors";
-import { generateStickerImage } from "@/lib/gemini/generate-sticker";
+import { recommendStickers } from "@/lib/recommend-stickers";
+import { renderStickerSvg } from "@/lib/render-sticker-svg";
 import { generationRequestSchema } from "@/schemas/generation";
 
 export const runtime = "nodejs";
@@ -13,37 +9,16 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const json = await request.json().catch(() => null);
-    const parsed = generationRequestSchema.safeParse(json);
-
-    if (!parsed.success) {
-      throw new AppError(
-        "BAD_REQUEST",
-        "이미지 생성 요청 형식이 올바르지 않습니다.",
-        400,
-      );
-    }
-
-    if (geminiConfig.mockGemini) {
-      const mockImage = await readFile(
-        join(process.cwd(), "public", "mock", "sticker-result.svg"),
-      );
-
-      return new NextResponse(mockImage, {
-        headers: {
-          "Content-Type": "image/svg+xml",
-          "Content-Disposition": 'inline; filename="birdguard-sticker.svg"',
-          "Cache-Control": "no-store",
-        },
-      });
-    }
-
-    const result = await generateStickerImage(parsed.data);
-
-    return new NextResponse(result.buffer, {
+    const parsed = generationRequestSchema.safeParse(await request.json().catch(() => null));
+    if (!parsed.success) throw new AppError("BAD_REQUEST", "디자인 요청 형식이 올바르지 않습니다.", 400);
+    const { analysis, selectedCategory, stickerPreferences, selectedStickerId } = parsed.data;
+    const recommendations = recommendStickers(analysis, selectedCategory, stickerPreferences);
+    const selected = selectedStickerId ? recommendations.find(item => item.id === selectedStickerId) : recommendations[0];
+    if (!selected) throw new AppError("BAD_REQUEST", "추천 조건이 바뀌었습니다. 디자인을 다시 선택해주세요.", 400);
+    return new NextResponse(renderStickerSvg(selected), {
       headers: {
-        "Content-Type": result.mimeType,
-        "Content-Disposition": 'inline; filename="birdguard-sticker.png"',
+        "Content-Type": "image/svg+xml; charset=utf-8",
+        "Content-Disposition": 'inline; filename="birdguard-design-preview.svg"',
         "Cache-Control": "no-store",
       },
     });

@@ -1,6 +1,8 @@
 import { getCategoryConfig } from "@/config/categories";
 import { getStickerRule } from "@/config/sticker-rules";
 import type { BuildingAnalysis, BuildingCategoryId } from "@/types/birdguard";
+import type { StickerRecommendation } from "@/lib/recommend-stickers";
+import { designPreviewNotice } from "@/config/sticker-catalog";
 
 export type DesignExplanation = {
   summary: string;
@@ -15,16 +17,27 @@ export function buildDesignExplanation({
   initialCategory,
   selectedCategory,
   customDesignRequest,
+  recommendation,
 }: {
   analysis: BuildingAnalysis;
   initialCategory: BuildingCategoryId;
   selectedCategory: BuildingCategoryId;
   customDesignRequest: string;
+  recommendation?: StickerRecommendation;
 }): DesignExplanation {
   const selectedConfig = getCategoryConfig(selectedCategory);
   const initialConfig = getCategoryConfig(initialCategory);
   const rule = getStickerRule(selectedCategory);
   const categoryChanged = initialCategory !== selectedCategory;
+  if (recommendation) {
+    return {
+      summary: `${recommendation.label} · ${recommendation.title}을 선택했습니다.`,
+      categoryLine: `AI 최초 분류: ${initialConfig.labelKo} / 최종 선택 분류: ${selectedConfig.labelKo}`,
+      reflectedFactors: recommendation.reasons,
+      reason: `마감 제안: ${recommendation.finish}. ${designPreviewNotice}`,
+      conceptNote: `디자인 조합: ${recommendation.id}. 제공된 SVG 원본으로 구성한 미리보기입니다.`,
+    };
+  }
   const riskFactors = analysis.riskFactors.slice(0, 3);
   const designFactors = analysis.designConsiderations.slice(0, 3);
   const reflectedFactors = [...riskFactors, ...designFactors].slice(0, 5);

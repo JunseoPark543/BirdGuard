@@ -1,7 +1,7 @@
 "use client";
 
 import { Bird, HomeIcon, MapPinned, Menu, ScanLine, UserRound } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnalysisStep } from "@/components/birdguard/analysis-step";
 import { AnalyzingStep } from "@/components/birdguard/analyzing-step";
 import { ErrorMessage } from "@/components/birdguard/error-message";
@@ -10,6 +10,8 @@ import { ResultStep } from "@/components/birdguard/result-step";
 import { BuddyzoneRegistration } from "@/components/birdguard/buddyzone-registration";
 import { KakaoBuddyzoneMap } from "@/components/birdguard/kakao-buddyzone-map";
 import { UploadStep } from "@/components/birdguard/upload-step";
+import { defaultStickerPreferences, type StickerPreferences } from "@/config/sticker-catalog";
+import { recommendStickers } from "@/lib/recommend-stickers";
 import { buildDesignExplanation, type DesignExplanation } from "@/lib/build-design-explanation";
 import { downloadBlobUrl } from "@/lib/download-image";
 import { AppError } from "@/lib/errors";
@@ -26,17 +28,22 @@ export default function Home() {
   const [step, setStep] = useState<BirdGuardStep>("upload");
   const [file, setFile] = useState<File | null>(null); const [preview, setPreview] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<BuildingAnalysis | null>(null); const [initialCategory, setInitialCategory] = useState<BuildingCategoryId | null>(null);
-  const [category, setCategory] = useState<BuildingCategoryId>("other"); const [request, setRequest] = useState("");
+  const [category, setCategory] = useState<BuildingCategoryId>("other"); const [preferences, setPreferences] = useState<StickerPreferences>(defaultStickerPreferences);
+  const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
+  const recommendations = useMemo(() => analysis ? recommendStickers(analysis, category, preferences) : [], [analysis, category, preferences]);
+  const selectedSticker = recommendations.find(item => item.id === selectedStickerId) ?? recommendations[0];
+  function changeCategory(value: BuildingCategoryId) { setCategory(value); setSelectedStickerId(null); }
+  function changePreferences(value: StickerPreferences) { setPreferences(value); setSelectedStickerId(null); }
   const [result, setResult] = useState<string | null>(null); const [explanation, setExplanation] = useState<DesignExplanation | null>(null);
   const [error, setError] = useState<string | null>(null); const [analyzing, setAnalyzing] = useState(false); const [generating, setGenerating] = useState(false);
   const previewRef = useRef<string | null>(null); const resultRef = useRef<string | null>(null); const analyzeLock = useRef(false); const generateLock = useRef(false); const generationDone = useRef(false);
   const revoke = (ref: React.MutableRefObject<string | null>) => { if (ref.current) URL.revokeObjectURL(ref.current); ref.current = null; };
   useEffect(() => () => { revoke(previewRef); revoke(resultRef); }, []);
 
-  async function selectFile(next: File) { try { setError(null); validateImageFileMetadata(next); await assertBrowserReadableImage(next); revoke(previewRef); revoke(resultRef); const url = URL.createObjectURL(next); previewRef.current = url; setFile(next); setPreview(url); setAnalysis(null); setResult(null); setExplanation(null); generationDone.current = false; } catch (e) { setError(errorText(e)); } }
+  async function selectFile(next: File) { try { setError(null); validateImageFileMetadata(next); await assertBrowserReadableImage(next); revoke(previewRef); revoke(resultRef); const url = URL.createObjectURL(next); previewRef.current = url; setFile(next); setPreview(url); setAnalysis(null); setSelectedStickerId(null); setPreferences(defaultStickerPreferences); setResult(null); setExplanation(null); generationDone.current = false; } catch (e) { setError(errorText(e)); } }
   async function analyze() { if (!file || analyzeLock.current) return; try { analyzeLock.current = true; setAnalyzing(true); setError(null); setStep("analyzing"); const optimized = await optimizeImageForAnalysis(file); const body = new FormData(); body.append("image", optimized); const response = await fetch("/api/analyze", { method: "POST", body }); const data = (await response.json()) as ApiResponse<BuildingAnalysis>; if (!response.ok || !data.success) throw new Error(!data.success ? data.error.message : "분석 요청 실패"); const parsed = buildingAnalysisSchema.parse(data.data); if (!parsed.isRelevantPhoto) throw new AppError("NOT_RELEVANT", "건물 정면과 창문이 선명하게 보이는 사진을 사용해 주세요.", 400); setAnalysis(parsed); setInitialCategory(parsed.primaryCategory); setCategory(parsed.primaryCategory); setStep("analysis"); } catch (e) { setError(errorText(e)); setStep("upload"); } finally { analyzeLock.current = false; setAnalyzing(false); } }
-  async function generate() { if (!analysis || !initialCategory || generateLock.current || generationDone.current) return; try { generateLock.current = true; setGenerating(true); setError(null); setStep("generating"); const response = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ analysis, selectedCategory: category, customDesignRequest: request, generationMode: "sticker-design" }) }); if (!response.ok) throw new Error(await responseError(response)); const blob = await response.blob(); if (!blob.size) throw new Error("생성된 이미지가 없습니다."); revoke(resultRef); const url = URL.createObjectURL(blob); resultRef.current = url; setResult(url); setExplanation(buildDesignExplanation({ analysis, initialCategory, selectedCategory: category, customDesignRequest: request })); generationDone.current = true; setStep("result"); } catch (e) { setError(errorText(e)); setStep("analysis"); } finally { generateLock.current = false; setGenerating(false); } }
-  function restart() { revoke(previewRef); revoke(resultRef); setStep("upload"); setFile(null); setPreview(null); setAnalysis(null); setInitialCategory(null); setCategory("other"); setRequest(""); setResult(null); setExplanation(null); setError(null); generationDone.current = false; }
+  async function generate() { if (!analysis || !initialCategory || !selectedSticker || generateLock.current || generationDone.current) return; try { generateLock.current = true; setGenerating(true); setError(null); setStep("generating"); const response = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ analysis, selectedCategory: category, customDesignRequest: "", generationMode: "sticker-design", stickerPreferences: preferences, selectedStickerId: selectedSticker.id }) }); if (!response.ok) throw new Error(await responseError(response)); const blob = await response.blob(); if (!blob.size) throw new Error("생성된 이미지가 없습니다."); revoke(resultRef); const url = URL.createObjectURL(blob); resultRef.current = url; setResult(url); setExplanation(buildDesignExplanation({ analysis, initialCategory, selectedCategory: category, customDesignRequest: "", recommendation: selectedSticker })); generationDone.current = true; setStep("result"); } catch (e) { setError(errorText(e)); setStep("analysis"); } finally { generateLock.current = false; setGenerating(false); } }
+  function restart() { revoke(previewRef); revoke(resultRef); setStep("upload"); setFile(null); setPreview(null); setAnalysis(null); setInitialCategory(null); setCategory("other"); setPreferences(defaultStickerPreferences); setSelectedStickerId(null); setResult(null); setExplanation(null); setError(null); generationDone.current = false; }
 
   return <main className="site-shell">
     <header className="topbar"><button className="brand" type="button" onClick={restart}><span className="brand-mark"><Bird size={20} /></span><span><b>BirdGuard</b></span></button><button className="icon-button" type="button" aria-label="메뉴"><Menu /></button></header>
@@ -45,9 +52,9 @@ export default function Home() {
       <ErrorMessage message={error} />
       {step === "upload" && <UploadStep previewUrl={preview} fileName={file?.name ?? null} isAnalyzing={analyzing} onFileSelected={selectFile} onAnalyze={analyze} />}
       {step === "analyzing" && preview && <AnalyzingStep previewUrl={preview} />}
-      {step === "analysis" && preview && analysis && <AnalysisStep previewUrl={preview} analysis={analysis} selectedCategory={category} customDesignRequest={request} isGenerating={generating} onSelectedCategoryChange={setCategory} onCustomDesignRequestChange={setRequest} onGenerate={generate} />}
-      {step === "generating" && <GeneratingStep selectedCategory={category} customDesignRequest={request} />}
-      {step === "result" && result && analysis && initialCategory && explanation && <ResultStep resultImageUrl={result} analysis={analysis} initialCategory={initialCategory} selectedCategory={category} designExplanation={explanation} onDownload={() => downloadBlobUrl(result, category)} onRestart={restart} onRegister={() => setStep("registration")} />}
+      {step === "analysis" && preview && analysis && selectedSticker && <AnalysisStep previewUrl={preview} analysis={analysis} selectedCategory={category} preferences={preferences} recommendations={recommendations} selected={selectedSticker} isGenerating={generating} onSelectedCategoryChange={changeCategory} onPreferencesChange={changePreferences} onStickerChange={setSelectedStickerId} onGenerate={generate} />}
+      {step === "generating" && <GeneratingStep selectedCategory={category} designName={selectedSticker?.title ?? "선택한 디자인"} />}
+      {step === "result" && result && analysis && initialCategory && explanation && <ResultStep resultImageUrl={result} analysis={analysis} initialCategory={initialCategory} selectedCategory={category} designExplanation={explanation} onDownload={() => downloadBlobUrl(result, category, "svg")} onRestart={restart} onRegister={() => setStep("registration")} />}
       {step === "registration" && <BuddyzoneRegistration onBack={() => setStep("result")} />}
       {step === "buddyzone-map" && <KakaoBuddyzoneMap onBack={() => setStep("upload")} />}
       {step === "upload" && <section className="why-section"><p className="section-kicker">WHY BIRDGUARD</p><h2>왜 버드가드인가요?</h2><div className="benefit-grid"><article><ScanLine /><b>5×10cm 법칙 준수</b><p>과학적으로 검증된 안전 간격</p></article><article><Bird /><b>건물 외벽과 완벽한 조화</b><p>재질/질감 맞춤 디자인 추천</p></article><article><MapPinned /><b>실제 설치 &amp; 인증까지</b><p>버디존 등록하고 인증 받으세요!</p></article></div></section>}
