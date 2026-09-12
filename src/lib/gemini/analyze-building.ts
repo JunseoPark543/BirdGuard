@@ -42,7 +42,7 @@ export async function analyzeBuildingImage({
       const prompt =
         attempt === 1
           ? basePrompt
-          : `${basePrompt}\n\n이전 응답은 JSON 검증에 실패했다. 이번에는 지정된 JSON 객체만 정확히 반환한다.`;
+          : `${basePrompt}\n\n이전 응답은 JSON 구조 또는 한국어 설명 검증에 실패했다. 모든 자유 서술 값을 한국어로 작성하고 지정된 JSON 객체만 정확히 반환한다.${lastError instanceof ZodError ? `\n수정할 항목: ${lastError.issues.map(issue => issue.path.join(".")).join(", ")}` : ""}`;
 
       const response = await ai.models.generateContent({
         model: geminiConfig.classificationModel,
@@ -61,6 +61,7 @@ export async function analyzeBuildingImage({
           },
         ],
         config: {
+          systemInstruction: "분석 결과의 모든 자유 서술 값은 한국어로 작성한다. JSON 키와 enum 코드는 지정된 값을 유지한다. 사진 속 영어와 참고 자료의 영어 용어를 설명에 그대로 옮기지 않는다.",
           temperature: 0.2,
           responseMimeType: "application/json",
           responseSchema: geminiAnalysisJsonSchema,

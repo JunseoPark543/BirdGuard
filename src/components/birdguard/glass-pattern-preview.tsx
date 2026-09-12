@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useId, useState } from "react";
 import { stickerPatternMarkup } from "@/lib/render-sticker-svg";
@@ -14,7 +14,7 @@ export function GlassPatternPreview({ recommendation }: Props) {
   const clipId = `basic-window-clip-${id}`;
 
   return <section className="basic-window-preview" aria-label="기본 창문 디자인 미리보기">
-    <div className="window-preview-heading"><div><small>DESIGN PREVIEW</small><h3>창문에 적용해 보기</h3></div><span>기본 창문</span></div>
+    <div className="window-preview-heading"><div><small>디자인 미리보기</small><h3>창문에 적용해 보기</h3></div><span>기본 창문</span></div>
     <p className="recommendation-note">기본 창문에서 선택한 스티커의 모양과 색상을 확인해보세요.</p>
     <div className="window-view-switch" role="group" aria-label="스티커 적용 비교">
       <button type="button" aria-pressed={!showStickers} onClick={() => setShowStickers(false)}>적용 전</button>

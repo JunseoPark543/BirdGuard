@@ -28,17 +28,17 @@ export function AnalysisStep({ previewUrl, analysis, selectedCategory, preferenc
     { key: "preferredColor", label: "선호 색상", options: { auto: "환경에 맞춰 추천", ...stickerColors } },
   ];
   return <section className="analysis-page">
-    <div className="page-title"><div><span>AI PHOTO ANALYSIS</span><h1>분석 결과</h1></div><button type="button" onClick={() => location.reload()}><RotateCcw /> 다시 분석</button></div>
+    <div className="page-title"><div><span>인공지능 사진 분석</span><h1>분석 결과</h1></div><button type="button" onClick={() => location.reload()}><RotateCcw /> 다시 분석</button></div>
     <div className="analysis-photo"><img src={previewUrl} alt="분석한 건물" /><span className="photo-count">1 / 1</span></div>
     <AnalysisSummary analysis={analysis} />
     <section className="recommend-box">
-      <div className="recommend-heading"><span><Sparkles /></span><div><small>DESIGN PREFERENCES</small><h2>추천 조건 확인</h2></div></div>
+      <div className="recommend-heading"><span><Sparkles /></span><div><small>디자인 선호 조건</small><h2>추천 조건 확인</h2></div></div>
       <CategorySelect value={selectedCategory} onChange={onSelectedCategoryChange} disabled={isGenerating} />
       <p className="recommendation-note">공간 용도를 직접 선택하면 건물 분류보다 우선합니다. 사진에서 확인하기 어려운 재질·형태·색상은 아래에서 보완해주세요.</p>
       <div className="sticker-preferences">{fields.map(field => <label key={field.key}>{field.label}<select disabled={isGenerating} value={preferences[field.key]} onChange={event => onPreferencesChange({ ...preferences, [field.key]: event.target.value })}>{Object.entries(field.options).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>)}</div>
     </section>
     <section className="design-recommendation">
-      <div className="recommend-title"><div><span>2-2</span><div><small>PERSONALIZED SOLUTION</small><h2>맞춤 디자인 추천</h2></div></div><p>건물 환경과 공간 용도에 맞춘 세 가지 디자인입니다.</p></div>
+      <div className="recommend-title"><div><span>2-2</span><div><small>공간 맞춤 제안</small><h2>맞춤 디자인 추천</h2></div></div><p>건물 환경과 공간 용도에 맞춘 세 가지 디자인입니다.</p></div>
       <div className="recommend-tabs" role="tablist" aria-label="디자인 상세">
         {([ ["design", "추천 디자인"], ["material", "마감 제안"], ["estimate", "견적 안내"] ] as const).map(([id, label]) => <button type="button" role="tab" aria-selected={tab === id} key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id)}>{label}</button>)}
       </div>

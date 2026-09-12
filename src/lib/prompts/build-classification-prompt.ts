@@ -76,6 +76,10 @@ ${formatCategories()}
 ${formatReferenceFeatures(manifest)}
 
 [응답 JSON 규칙]
+- JSON 키와 지정된 enum 값은 그대로 유지하되, 사용자에게 보이는 자유 서술 값은 모두 한국어로 작성한다.
+- 한국어 작성 대상: imageQualityReason, classificationReason, buildingUse, estimatedFloorCount.explanation, riskFactors의 각 항목, environmentTags의 각 항목, analyzedEvidence의 각 항목, designConsiderations의 각 항목, glassRegions.label, caution.
+- buildingUse는 "Residential" 대신 "주거용 건물로 추정", riskFactors는 "Large glass panels" 대신 "넓은 유리 패널"처럼 작성한다. 영어 원문이나 영어 번역을 괄호 안에 덧붙이지 않는다.
+- AI, UV 및 cm, mm, m 같은 길이·면적 단위만 한국어 설명 안에서 영문으로 표기할 수 있다. 그 밖의 영어 용어는 한국어로 풀어 쓴다.
 - schemaVersion은 1이다.
 - primaryCategory는 commercial, transparent-barrier, glass-facade, university, near-nature, residential, special, other 중 하나다.
 - secondaryCategories는 최대 3개다.

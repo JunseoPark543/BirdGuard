@@ -4,7 +4,12 @@ import { buildingCategoryIds } from "@/config/categories";
 
 export const buildingCategoryIdSchema = z.enum(buildingCategoryIds);
 
-const limitedKoreanText = z.string().trim().min(1).max(240);
+const allowedLatinTerms = new Set(["AI", "UV", "cm", "mm", "m"]);
+const koreanText = (maxLength: number) => z.string().trim().min(1).max(maxLength).refine(
+  (value) => /[가-힣]/.test(value) && (value.match(/[A-Za-z]+/g) ?? []).every(term => allowedLatinTerms.has(term)),
+  "설명은 한국어로 작성해야 합니다. 영문 표기는 AI, UV와 길이·면적 단위만 허용합니다.",
+);
+const limitedKoreanText = koreanText(240);
 const shortTextArray = z.array(limitedKoreanText).max(8);
 const confidenceSchema = z.number().int().min(0).max(100);
 
@@ -53,13 +58,13 @@ export const buildingAnalysisSchema = z
       "unknown",
     ]),
     riskFactors: shortTextArray,
-    environmentTags: z.array(z.string().trim().min(1).max(40)).max(8),
+    environmentTags: z.array(koreanText(40)).max(8),
     analyzedEvidence: shortTextArray,
     designConsiderations: shortTextArray,
     glassRegions: z
       .array(
         z.object({
-          label: z.string().trim().min(1).max(80),
+          label: koreanText(80),
           confidence: confidenceSchema,
           polygon: z
             .array(z.tuple([z.number().min(0).max(1000), z.number().min(0).max(1000)]))
@@ -68,7 +73,7 @@ export const buildingAnalysisSchema = z
         }),
       )
       .max(30),
-    caution: z.string().trim().min(1).max(320),
+    caution: koreanText(320),
   })
   .superRefine((value, context) => {
     const secondaryIds = value.secondaryCategories.map((item) => item.category);
@@ -90,6 +95,11 @@ export const buildingAnalysisSchema = z
   });
 
 export type BuildingAnalysisInput = z.infer<typeof buildingAnalysisSchema>;
+
+const koreanJsonText = {
+  type: "string",
+  description: "사용자에게 표시할 한국어 설명. 영어 문장이나 영어 단어를 병기하지 않는다. AI, UV 및 cm, mm, m 단위는 한국어 설명 안에서 사용할 수 있다.",
+} as const;
 
 export const geminiAnalysisJsonSchema = {
   type: "object",
@@ -120,7 +130,7 @@ export const geminiAnalysisJsonSchema = {
     schemaVersion: { type: "number" },
     isRelevantPhoto: { type: "boolean" },
     imageQuality: { type: "string", enum: ["good", "usable", "poor"] },
-    imageQualityReason: { type: "string" },
+    imageQualityReason: koreanJsonText,
     primaryCategory: {
       type: "string",
       enum: [...buildingCategoryIds],
@@ -138,8 +148,8 @@ export const geminiAnalysisJsonSchema = {
       },
     },
     classificationConfidence: { type: "number" },
-    classificationReason: { type: "string" },
-    buildingUse: { type: "string" },
+    classificationReason: koreanJsonText,
+    buildingUse: { ...koreanJsonText, description: "건물 용도를 한국어로 작성한다. 예: 주거용 건물로 추정, 교육 시설, 용도 확인 어려움. Residential 같은 영어 용도명을 쓰지 않는다." },
     windowSize: {
       type: "string",
       enum: ["small", "medium", "large", "mixed", "unknown"],
@@ -162,24 +172,24 @@ export const geminiAnalysisJsonSchema = {
       properties: {
         min: { type: "number", nullable: true },
         max: { type: "number", nullable: true },
-        explanation: { type: "string" },
+        explanation: koreanJsonText,
       },
     },
     birdCollisionRisk: {
       type: "string",
       enum: ["low", "medium", "high", "critical", "unknown"],
     },
-    riskFactors: { type: "array", items: { type: "string" } },
-    environmentTags: { type: "array", items: { type: "string" } },
-    analyzedEvidence: { type: "array", items: { type: "string" } },
-    designConsiderations: { type: "array", items: { type: "string" } },
+    riskFactors: { type: "array", items: koreanJsonText },
+    environmentTags: { type: "array", items: koreanJsonText },
+    analyzedEvidence: { type: "array", items: koreanJsonText },
+    designConsiderations: { type: "array", items: koreanJsonText },
     glassRegions: {
       type: "array",
       items: {
         type: "object",
         required: ["label", "confidence", "polygon"],
         properties: {
-          label: { type: "string" },
+          label: koreanJsonText,
           confidence: { type: "number" },
           polygon: {
             type: "array",
@@ -191,6 +201,6 @@ export const geminiAnalysisJsonSchema = {
         },
       },
     },
-    caution: { type: "string" },
+    caution: koreanJsonText,
   },
 } as const;
